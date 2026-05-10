@@ -1,10 +1,16 @@
 import telebot
 from datetime import datetime
-import os
 
 BOT_TOKEN = "8708661936:AAEKDfMJvflGkEDXeFr2tvU9tQIDa8RENNw"
 
+# PUT YOUR GROUP ID HERE
+GROUP_ID = -1003839159361
+
 bot = telebot.TeleBot(BOT_TOKEN)
+
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.reply_to(message, "Bot is active ✅")
 
 @bot.message_handler(commands=['report'])
 def report(message):
@@ -33,10 +39,15 @@ def report(message):
 📅 Date: {today}
 """
 
-        bot.reply_to(message, text)
+        bot.send_message(GROUP_ID, text)
+
+        bot.reply_to(message, "Report sent to group ✅")
 
     except:
-        bot.reply_to(message, "Usage:\n/report @username links salary credited/pending")
+        bot.reply_to(
+            message,
+            "Usage:\n/report @username links salary credited/pending"
+        )
 
 print("Bot Running...")
 bot.infinity_polling()
