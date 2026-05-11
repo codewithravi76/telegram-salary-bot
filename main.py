@@ -1,3 +1,5 @@
+import asyncio
+asyncio.set_event_loop(asyncio.new_event_loop())
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -109,17 +111,11 @@ async def paid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(str(e))
 
-try:
-    print("Starting bot...")
+app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("update", update_salary))
+app.add_handler(CommandHandler("paid", paid))
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CommandHandler("update", update_salary))
-    app.add_handler(CommandHandler("paid", paid))
-
-    print("Bot Running...")
-    app.run_polling()
-
-except Exception as e:
-    print("ERROR:", e)
+print("Bot Running...")
+app.run_polling()
