@@ -109,11 +109,17 @@ async def paid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(str(e))
 
-app = ApplicationBuilder().token(BOT_TOKEN).build()
+try:
+    print("Starting bot...")
 
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("update", update_salary))
-app.add_handler(CommandHandler("paid", paid))
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-print("Bot Running...")
-app.run_polling()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("update", update_salary))
+    app.add_handler(CommandHandler("paid", paid))
+
+    print("Bot Running...")
+    app.run_polling()
+
+except Exception as e:
+    print("ERROR:", e)
