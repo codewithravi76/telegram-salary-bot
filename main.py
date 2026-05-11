@@ -1,8 +1,11 @@
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    ContextTypes
+)
 import json
 import os
-from datetime import datetime
 
 BOT_TOKEN = "8708661936:AAEKDfMJvflGkEDXeFr2tvU9tQIDa8RENNw"
 GROUP_ID = -1003839159361
@@ -10,7 +13,6 @@ ADMIN_ID = 7222663168
 
 DATA_FILE = "data.json"
 
-# Create data file if not exists
 if not os.path.exists(DATA_FILE):
     with open(DATA_FILE, "w") as f:
         json.dump([], f)
@@ -23,14 +25,12 @@ def save_data(data):
     with open(DATA_FILE, "w") as f:
         json.dump(data, f, indent=4)
 
-# START
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
 
-    await update.message.reply_text("✅ Salary Bot Active")
+    await update.message.reply_text("✅ Bot Running")
 
-# UPDATE COMMAND
 async def update_salary(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
@@ -44,36 +44,33 @@ async def update_salary(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         data = load_data()
 
-        entry = {
+        data.append({
             "username": username,
             "links": links,
             "amount": amount,
             "status": status,
             "date": date
-        }
+        })
 
-        data.append(entry)
         save_data(data)
 
-        message = f"""
+        text = f"""
 📋 Salary Update
 
 👤 Employee: {username}
 🔗 Links Submitted: {links}
 💰 Salary: ₹{amount}
-📌 Status: {status.capitalize()}
+📌 Status: {status}
 📅 Date: {date}
 """
 
-        await context.bot.send_message(chat_id=GROUP_ID, text=message)
+        await context.bot.send_message(chat_id=GROUP_ID, text=text)
+
         await update.message.reply_text("✅ Update Sent")
 
-    except:
-        await update.message.reply_text(
-            "❌ Usage:\n/update @username links amount status date"
-        )
+    except Exception as e:
+        await update.message.reply_text(str(e))
 
-# PAID COMMAND
 async def paid(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID:
         return
@@ -95,7 +92,7 @@ async def paid(update: Update, context: ContextTypes.DEFAULT_TYPE):
         save_data(data)
 
         if found:
-            message = f"""
+            text = f"""
 ✅ Payment Update
 
 👤 Employee: {username}
@@ -103,43 +100,20 @@ async def paid(update: Update, context: ContextTypes.DEFAULT_TYPE):
 📅 Paid Date: {paid_date}
 """
 
-            await context.bot.send_message(chat_id=GROUP_ID, text=message)
-            await update.message.reply_text("✅ Marked As Paid")
+            await context.bot.send_message(chat_id=GROUP_ID, text=text)
+            await update.message.reply_text("✅ Marked Paid")
 
         else:
-            await update.message.reply_text("❌ No Pending Record Found")
+            await update.message.reply_text("❌ No Pending Record")
 
-    except:
-        await update.message.reply_text(
-            "❌ Usage:\n/paid @username date"
-        )
+    except Exception as e:
+        await update.message.reply_text(str(e))
 
-# PENDING COMMAND
-async def pending(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != ADMIN_ID:
-        return
-
-    data = load_data()
-
-    pending_users = [
-        f"👤 {x['username']} - ₹{x['amount']}"
-        for x in data if x["status"].lower() == "pending"
-    ]
-
-    if pending_users:
-        text = "📌 Pending Salaries\n\n" + "\n".join(pending_users)
-    else:
-        text = "✅ No Pending Salaries"
-
-    await update.message.reply_text(text)
-
-# MAIN
 app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("update", update_salary))
 app.add_handler(CommandHandler("paid", paid))
-app.add_handler(CommandHandler("pending", pending))
 
 print("Bot Running...")
 app.run_polling()
